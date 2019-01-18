@@ -53,14 +53,17 @@ parts:
 
   factorio:
     plugin: nil
-    override-pull: |
+    override-build: |
+      snapcraftctl build
       curl --location-trusted --max-redirs 5 --remote-name --remote-header-name https://www.factorio.com/get-download/$SNAPCRAFT_PROJECT_VERSION/headless/linux64
       tar --extract --file=factorio_headless_x64_$SNAPCRAFT_PROJECT_VERSION.tar.xz
       rm factorio_headless_x64_$SNAPCRAFT_PROJECT_VERSION.tar.xz
       rm factorio/config-path.cfg
-
-    override-build: |
       cp --recursive ./* $SNAPCRAFT_PART_INSTALL
+    build-packages:
+      - curl
+    stage-packages:
+      - libssl1.0.0
 
   config:
     after:
