@@ -34,6 +34,7 @@ apps:
   server:
     command: factorio/factorio-headless.server
     daemon: simple
+    restart-condition: never
     plugs: [network, network-bind]
 
   factorio-headless:

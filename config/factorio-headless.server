@@ -5,7 +5,7 @@
 #
 
 # Remove temporary zip which blocks loading last save
-sudo rm /var/snap/factorio-headless/common/saves/*.tmp.zip
+rm --force ${SNAP_COMMON}/saves/*.tmp.zip
 
 COMMAND="${SNAP}/factorio/bin/x64/factorio --start-server-load-latest"
 
