@@ -1,0 +1,35 @@
+#!/bin/bash -e
+
+# Copy common data such as saves and server config to $SNAP-COMMON directory
+cp --recursive $SNAP/common/* $SNAP_COMMON/
+
+# Setup default values so server configuration templates properly
+# Last 4 are for command line
+snapctl set \
+	name="Name of the game as it will appear in the game listing" \
+	description="Description of the game that will appear in the listing" \
+	tags='["game", "tags"]' \
+	max-players=0 \
+	visibility-public=true \
+	visibility-lan=true \
+	username="" \
+	password="" \
+	token="" \
+	game-password="" \
+ 	require-user-verification=false \
+  	max-upload-in-kilobytes-per-second=0 \
+	minimum-latency-in-ticks=0 \
+	ignore-player-limit-for-returning-players=false \
+	allow-commands="admins-only" \
+	autosave-interval=10 \
+	autosave-slots=5 \
+	afk-autokick-interval=0 \
+	auto-pause=true \
+	only-admins-can-pause-the-game=true \
+	autosave-only-on-server=true \
+	non-blocking-saving=false \
+	admins='[]' \
+	port="" \
+	bind="" \
+	rcon-port="" \
+	rcon-password="" \

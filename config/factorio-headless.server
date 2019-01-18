@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Wrapper script for additional options set via snap settings
+# https://wiki.factorio.com/Console#Command_line_parameters
+#
+COMMAND="${SNAP}/factorio/bin/x64/factorio --start-server-load-latest"
+
+PORT=$(snapctl get port)
+if [ -n "${PORT}" ]; then
+	COMMAND="${COMMAND} --port ${PORT}"
+fi
+
+BIND=$(snapctl get bind)
+if [ -n "${BIND}" ]; then
+	COMMAND="${COMMAND} --bind ${BIND}"
+fi
+
+RCON_PORT=$(snapctl get rcon-port)
+if [ -n "${RCON_PORT}" ]; then
+	COMMAND="${COMMAND} --rcon-port ${RCON_PORT}"
+fi
+
+RCON_PASSWORD=$(snapctl get rcon-password)
+if [ -n "${RCON_PASSWORD}" ]; then
+	COMMAND="${COMMAND} --rcon-password ${RCON_PASSWORD}"
+fi
+
+${COMMAND}
+

@@ -1,0 +1,52 @@
+#!/bin/bash -e
+
+# Get configuration for snap
+CONFIG_NAME=$(snapctl get name)
+CONFIG_DESCRIPTION=$(snapctl get description)
+CONFIG_TAGS=$(printf %q $(snapctl get tags))
+CONFIG_MAX_PLAYERS=$(snapctl get max-players)
+CONFIG_VISIBILITY_PUBLIC=$(snapctl get visibility-public)
+CONFIG_VISIBILITY_LAN=$(snapctl get visibility-lan)
+CONFIG_USERNAME=$(snapctl get username)
+CONFIG_PASSWORD=$(snapctl get password)
+CONFIG_TOKEN=$(snapctl get token)
+CONFIG_GAME_PASSWORD=$(snapctl get game-password)
+CONFIG_REQUIRE_USER_VERIFICATION=$(snapctl get require-user-verification)
+CONFIG_MAX_UPLOAD_IN_KILOBYTES_PER_SECOND=$(snapctl get max-upload-in-kilobytes-per-second)
+CONFIG_MINIMUM_LATENCY_IN_TICKS=$(snapctl get minimum-latency-in-ticks)
+CONFIG_IGNORE_PLAYER_LIMIT_FOR_RETURNING_PLAYERS=$(snapctl get ignore-player-limit-for-returning-players)
+CONFIG_ALLOW_COMMANDS=$(snapctl get allow-commands)
+CONFIG_AUTOSAVE_INTERVAL=$(snapctl get autosave-interval)
+CONFIG_AUTOSAVE_SLOTS=$(snapctl get autosave-slots)
+CONFIG_AFK_AUTOKICK_INTERVAL=$(snapctl get afk-autokick-interval)
+CONFIG_AUTO_PAUSE=$(snapctl get auto-pause)
+CONFIG_ONLY_ADMINS_CAN_PAUSE_THE_GAME=$(snapctl get only-admins-can-pause-the-game)
+CONFIG_AUTOSAVE_ONLY_ON_SERVER=$(snapctl get autosave-only-on-server)
+CONFIG_NON_BLOCKING_SAVING=$(snapctl get non-blocking-saving)
+CONFIG_ADMINS=$(printf %q $(snapctl get admins))
+
+# Apply configuration to template.json
+sed -e "s:CONFIG_NAME:${CONFIG_NAME}:g" \
+	-e "s:CONFIG_DESCRIPTION:${CONFIG_DESCRIPTION}:g" \
+	-e "s:CONFIG_TAGS:${CONFIG_TAGS}:g" \
+	-e "s:CONFIG_MAX_PLAYERS:${CONFIG_MAX_PLAYERS}:g" \
+	-e "s:CONFIG_VISIBILITY_PUBLIC:${CONFIG_VISIBILITY_PUBLIC}:g" \
+	-e "s:CONFIG_VISIBILITY_LAN:${CONFIG_VISIBILITY_LAN}:g" \
+	-e "s:CONFIG_USERNAME:${CONFIG_USERNAME}:g" \
+	-e "s:CONFIG_PASSWORD:${CONFIG_PASSWORD}:g" \
+	-e "s:CONFIG_TOKEN:${CONFIG_TOKEN}:g" \
+	-e "s:CONFIG_GAME_PASSWORD:${CONFIG_GAME_PASSWORD}:g" \
+	-e "s:CONFIG_REQUIRE_USER_VERIFICATION:${CONFIG_REQUIRE_USER_VERIFICATION}:g" \
+	-e "s:CONFIG_MAX_UPLOAD_IN_KILOBYTES_PER_SECOND:${CONFIG_MAX_UPLOAD_IN_KILOBYTES_PER_SECOND}:g" \
+	-e "s:CONFIG_MINIMUM_LATENCY_IN_TICKS:${CONFIG_MINIMUM_LATENCY_IN_TICKS}:g" \
+	-e "s:CONFIG_IGNORE_PLAYER_LIMIT_FOR_RETURNING_PLAYERS:${CONFIG_IGNORE_PLAYER_LIMIT_FOR_RETURNING_PLAYERS}:g" \
+	-e "s:CONFIG_ALLOW_COMMANDS:${CONFIG_ALLOW_COMMANDS}:g" \
+	-e "s:CONFIG_AUTOSAVE_INTERVAL:${CONFIG_AUTOSAVE_INTERVAL}:g" \
+	-e "s:CONFIG_AUTOSAVE_SLOTS:${CONFIG_AUTOSAVE_SLOTS}:g" \
+	-e "s:CONFIG_AFK_AUTOKICK_INTERVAL:${CONFIG_AFK_AUTOKICK_INTERVAL}:g" \
+	-e "s:CONFIG_AUTO_PAUSE:${CONFIG_AUTO_PAUSE}:g" \
+	-e "s:CONFIG_ONLY_ADMINS_CAN_PAUSE_THE_GAME:${CONFIG_ONLY_ADMINS_CAN_PAUSE_THE_GAME}:g" \
+	-e "s:CONFIG_AUTOSAVE_ONLY_ON_SERVER:${CONFIG_AUTOSAVE_ONLY_ON_SERVER}:g" \
+	-e "s:CONFIG_NON_BLOCKING_SAVING:${CONFIG_NON_BLOCKING_SAVING}:g" \
+	-e "s:CONFIG_ADMINS:${CONFIG_ADMINS}:g" \
+	$SNAP/factorio/server-settings.template > $SNAP_COMMON/server-settings.json

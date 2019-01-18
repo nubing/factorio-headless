@@ -1,0 +1,63 @@
+{
+  "name": "CONFIG_NAME",
+  "description": "CONFIG_DESCRIPTION",
+  "tags": CONFIG_TAGS,
+
+  "_comment_max_players": "Maximum number of players allowed, admins can join even a full server. 0 means unlimited.",
+  "max_players": CONFIG_MAX_PLAYERS,
+
+  "_comment_visibility": ["public: Game will be published on the official Factorio matching server",
+                          "lan: Game will be broadcast on LAN"],
+  "visibility":
+  {
+    "public": CONFIG_VISIBILITY_PUBLIC,
+    "lan": CONFIG_VISIBILITY_LAN
+  },
+
+  "_comment_credentials": "Your factorio.com login credentials. Required for games with visibility public",
+  "username": "CONFIG_USERNAME",
+  "password": "CONFIG_PASSWORD",
+
+  "_comment_token": "Authentication token. May be used instead of 'password' above.",
+  "token": "CONFIG_TOKEN",
+
+  "game_password": "CONFIG_GAME_PASSWORD",
+
+  "_comment_require_user_verification": "When set to true, the server will only allow clients that have a valid Factorio.com account",
+  "require_user_verification": CONFIG_REQUIRE_USER_VERIFICATION,
+
+  "_comment_max_upload_in_kilobytes_per_second" : "optional, default value is 0. 0 means unlimited.",
+  "max_upload_in_kilobytes_per_second": CONFIG_MAX_UPLOAD_IN_KILOBYTES_PER_SECOND,
+
+  "_comment_minimum_latency_in_ticks": "optional one tick is 16ms in default speed, default value is 0. 0 means no minimum.",
+  "minimum_latency_in_ticks": CONFIG_MINIMUM_LATENCY_IN_TICKS,
+
+  "_comment_ignore_player_limit_for_returning_players": "Players that played on this map already can join even when the max player limit was reached.",
+  "ignore_player_limit_for_returning_players": CONFIG_IGNORE_PLAYER_LIMIT_FOR_RETURNING_PLAYERS,
+
+  "_comment_allow_commands": "possible values are, true, false and admins-only",
+  "allow_commands": "CONFIG_ALLOW_COMMANDS",
+
+  "_comment_autosave_interval": "Autosave interval in minutes",
+  "autosave_interval": CONFIG_AUTOSAVE_INTERVAL,
+
+  "_comment_autosave_slots": "server autosave slots, it is cycled through when the server autosaves.",
+  "autosave_slots": CONFIG_AUTOSAVE_SLOTS,
+
+  "_comment_afk_autokick_interval": "How many minutes until someone is kicked when doing nothing, 0 for never.",
+  "afk_autokick_interval": CONFIG_AFK_AUTOKICK_INTERVAL,
+
+  "_comment_auto_pause": "Whether should the server be paused when no players are present.",
+  "auto_pause": CONFIG_AUTO_PAUSE,
+
+  "only_admins_can_pause_the_game": CONFIG_ONLY_ADMINS_CAN_PAUSE_THE_GAME,
+
+  "_comment_autosave_only_on_server": "Whether autosaves should be saved only on server or also on all connected clients. Default is true.",
+  "autosave_only_on_server": CONFIG_AUTOSAVE_ONLY_ON_SERVER,
+  
+  "_comment_non_blocking_saving": "Highly experimental feature, enable only at your own risk of losing your saves. On UNIX systems, server will fork itself to create an autosave. Autosaving on connected Windows clients will be disabled regardless of autosave_only_on_server option.",
+  "non_blocking_saving": CONFIG_NON_BLOCKING_SAVING,
+
+  "_comment_admins": "List of case insensitive usernames, that will be promoted immediately",
+  "admins": CONFIG_ADMINS
+}
