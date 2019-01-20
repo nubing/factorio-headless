@@ -2,7 +2,7 @@
 # Factorio headless bash completions
 #
 
-function _completer_factorio-headless {
+function _factorio-headless {
 
     local cur prev words cword split
     _init_completion -s || return
@@ -139,4 +139,4 @@ function _completer_factorio-headless {
     $split && return
 }
 
-complete -F _completer_factorio-headless factorio-headless
+complete -F _factorio-headless factorio-headless
