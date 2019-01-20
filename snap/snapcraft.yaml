@@ -34,11 +34,13 @@ apps:
   server:
     command: factorio/factorio-headless.server
     daemon: simple
+    stop-timeout: 30s
     restart-condition: never
     plugs: [network, network-bind]
 
   factorio-headless:
     command: factorio/bin/x64/factorio
+    completer: factorio/bash-completion
     plugs: [network, network-bind, home]
 
 parts:

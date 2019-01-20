@@ -1,0 +1,142 @@
+#
+# Factorio headless bash completions
+#
+
+function _completer_factorio-headless {
+
+    local cur prev words cword split
+    _init_completion -s || return
+
+    local ALL_OPTIONS='
+        --help
+        --version
+        --verbose
+        --check-unused-prototype-data
+        --no-log-rotation
+        --enable-runtime-autoplace-modification
+        --start-server-load-latest
+        --mod-directory
+        --executable-path
+        --config
+        --map2scenario
+        --scenario2map
+        --apply-update
+        --create
+        --map-gen-settings
+        --map-gen-seed
+        --map-settings
+        --preset
+        --generate-map-preview
+        --generate-tile-properties-csv
+        --map-preview-size
+        --map-preview-scale
+        --map-preview-offset
+        --noise-outputs
+        --slope-shading
+        --report-quantities
+        --threads
+        --start-server
+        --start-server-load-scenario
+        --until-tick
+        --benchmark
+        --benchmark-ticks
+        --port
+        --bind
+        --rcon-port
+        --rcon-password
+        --server-settings
+        --server-whitelist
+        --server-banlist
+        --console-log
+        --server-id
+    '
+
+    local PRESET_OPTIONS='
+        rich-resources
+        marathon
+        death-world
+        death-world-marathon
+        rail-world
+    '
+
+    # Go 
+    case "$prev" in
+        # Files selection
+        --executable-path|--apply-update|--console-log|--server-id)
+            _filedir
+            ;;
+
+        # Directories selection
+        --mod-directory)
+            _filedir -d
+            ;;
+
+        # Save selection
+        -s|--map2scenario)
+            SAVES=$(ls -w 1 /var/snap/factorio-headless/common/saves)
+            COMPREPLY=($( compgen -W "$SAVES" -- "$cur" ) )
+            ;;
+
+        # Scenario selection
+        -m|--scenario2map|--start-server-load-scenario)
+            SCENARIOS=$(ls -w 1 /var/snap/factorio-headless/common/scenarios)
+            COMPREPLY=($( compgen -W "$SCENARIOS" -- "$cur" ) )
+            ;;
+
+        # Presets selection
+        --preset)
+            COMPREPLY=($( compgen -W "$PRESET_OPTIONS" -- "$cur" ) )
+            ;;
+
+       # INI selection
+        -c|--config)
+            _filedir "ini"
+            ;;
+
+       # ZIP selection
+        --create|--start-server|--benchmark)
+            _filedir "zip"
+            ;;
+
+        # JSON selection
+        --map-gen-settings|--map-settings|--server-settings|--server-whitelist|--server-banlist)
+            _filedir "json"
+            ;;
+
+        # CSV selection
+        --generate-tile-properties-csv)
+            _filedir "csv"
+            ;;
+
+       # PNG selection
+        --generate-map-preview)
+            _filedir "png"
+            ;;
+
+        # Default options for map previews
+        --map-preview-size)
+            COMPREPLY=("1024")
+            ;;
+
+        --map-preview-scale)
+            COMPREPLY=("1")
+            ;;
+
+        --map-preview-offset)
+            COMPREPLY=("0,0")
+            ;;
+
+        # Skip completitions that need an argument
+        --map-gen-seed|--noise-outputs|--slope-shading|--report-quantities|--threads|--until-tick|--benchmark-ticks|--port|--bind|--rcon-port|--rcon-password)
+            ;;
+
+        # Show all options 
+        *)
+            COMPREPLY=($( compgen -W "$ALL_OPTIONS" -- "$cur" ) )
+            ;;
+    esac
+
+    $split && return
+}
+
+complete -F _completer_factorio-headless factorio-headless

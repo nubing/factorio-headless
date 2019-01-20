@@ -16,7 +16,7 @@ snapctl set \
 	password="" \
 	token="" \
 	game-password="" \
- 	require-user-verification=false \
+ 	require-user-verification=true \
   	max-upload-in-kilobytes-per-second=0 \
 	minimum-latency-in-ticks=0 \
 	ignore-player-limit-for-returning-players=false \
