@@ -59,8 +59,9 @@ function _factorio-headless {
         rail-world
     '
 
-    # Go 
+    # Complete based on previous argument
     case "$prev" in
+
         # Files selection
         --executable-path|--apply-update|--console-log)
             _filedir
@@ -73,19 +74,21 @@ function _factorio-headless {
 
         # Save selection
         -s|--map2scenario)
-            SAVES=$(ls -w 1 /var/snap/factorio-headless/common/saves)
-            COMPREPLY=($( compgen -W "$SAVES" -- "$cur" ) )
+            local IFS=$'\n'
+            compopt -o filenames
+            COMPREPLY=($( cd /var/snap/factorio-headless/common/saves; compgen -f -- "$cur" ))
             ;;
 
         # Scenario selection
         -m|--scenario2map|--start-server-load-scenario)
-            SCENARIOS=$(ls -w 1 /var/snap/factorio-headless/common/scenarios)
-            COMPREPLY=($( compgen -W "$SCENARIOS" -- "$cur" ) )
+            local IFS=$'\n'
+            compopt -o filenames
+            COMPREPLY=($( cd /var/snap/factorio-headless/common/scenarios; compgen -d -- "$cur" ))
             ;;
 
         # Presets selection
         --preset)
-            COMPREPLY=($( compgen -W "$PRESET_OPTIONS" -- "$cur" ) )
+            COMPREPLY=($( compgen -W "$PRESET_OPTIONS" -- "$cur" ))
             ;;
 
        # INI selection
@@ -115,27 +118,23 @@ function _factorio-headless {
 
         # Default options
         --map-preview-size)
-            COMPREPLY=("1024")
+            COMPREPLY=($( compgen -W "1024" -- "$cur" ))
             ;;
 
         --map-preview-scale)
-            COMPREPLY=("1")
+            COMPREPLY=($( compgen -W "1" -- "$cur" ))
             ;;
 
         --map-preview-offset)
-            COMPREPLY=("0,0")
+            COMPREPLY=($( compgen -W "0,0" -- "$cur" ))
             ;;
 
         --port)
-            COMPREPLY=("34197")
-            ;;
-
-        --port)
-            COMPREPLY=("34197")
+            COMPREPLY=($( compgen -W "34197" -- "$cur" ))
             ;;
 
         --benchmark-ticks)
-            COMPREPLY=("1000")
+            COMPREPLY=($( compgen -W "1000" -- "$cur" ))
             ;;
 
         # Skip completitions that need an argument
@@ -144,11 +143,9 @@ function _factorio-headless {
 
         # Show all options 
         *)
-            COMPREPLY=($( compgen -W "$ALL_OPTIONS" -- "$cur" ) )
+            COMPREPLY=($( compgen -W "$ALL_OPTIONS" -- "$cur" ))
             ;;
     esac
-
-    $split && return
 }
 
 complete -F _factorio-headless factorio-headless
