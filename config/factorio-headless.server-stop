@@ -5,6 +5,8 @@ pid=$(cat /var/snap/factorio-headless/common/.pid)
 kill $pid
 
 # Wait for server to close
-wait $pid
+while kill -0 $pid 2> /dev/null; do
+  sleep 1
+done
 
 
