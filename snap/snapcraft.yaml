@@ -1,32 +1,29 @@
 name: factorio-headless
 version: '0.16.51'
-summary: Factorio headless server
+summary: Headless server for Factorio running as a system service
 description: |
-  Headless server for Factorio running as a system service.
-
   Change configuration options
 
-      sudo snap get factorio-headless
-      sudo snap set factorio-headless admins='["kovarex"]'
-      sudo snap set factorio-headless game-password=1337
-      sudo snap restart factorio-headless
+    sudo snap get factorio-headless
+    sudo snap set factorio-headless admins='["kovarex"]'
+    sudo snap set factorio-headless game-password=1337
+    sudo snap restart factorio-headless
 
   Control the service and check status
 
-      sudo snap start factorio-headless
-      sudo snap stop factorio-headless
-      sudo snap start --enable factorio-headless
-      sudo snap stop --disable factorio-headless
-      sudo snap services | grep factorio-headless
+    sudo snap start factorio-headless
+    sudo snap stop factorio-headless
+    sudo snap start --enable factorio-headless
+    sudo snap stop --disable factorio-headless
+    sudo snap services | grep factorio-headless
 
   Server files location
 
-      ls /var/snap/factorio-headless/common
+    ls /var/snap/factorio-headless/common
 
 grade: stable
 confinement: strict
 
-base: core18
 architectures:
   - build-on: amd64
 
@@ -34,7 +31,7 @@ apps:
   server:
     command: factorio/factorio-headless.server
     daemon: simple
-    stop-timeout: 30s
+    stop-timeout: 20s
     restart-condition: never
     plugs: [network, network-bind]
 
@@ -44,29 +41,14 @@ apps:
     plugs: [network, network-bind, home]
 
 parts:
-  # There is an issue when using dump plugin to download from cdn server
-  # Issue might be with content-disposition header, using overrides as a workaround
-  # factorio:
-  #   plugin: dump
-  #   source: https://www.factorio.com/get-download/$SNAPCRAFT_PROJECT_VERSION/headless/linux64
-  #   stage:
-  #     - -factorio/config-path.cfg
-  #   organize:
-  #     '*' : factorio/
-
   factorio:
-    plugin: nil
-    override-build: |
-      snapcraftctl build
-      curl --location-trusted --max-redirs 5 --remote-name --remote-header-name https://www.factorio.com/get-download/$SNAPCRAFT_PROJECT_VERSION/headless/linux64
-      tar --extract --file=factorio_headless_x64_$SNAPCRAFT_PROJECT_VERSION.tar.xz
-      rm factorio_headless_x64_$SNAPCRAFT_PROJECT_VERSION.tar.xz
-      rm factorio/config-path.cfg
-      cp --recursive ./* $SNAPCRAFT_PART_INSTALL
-    build-packages:
-      - curl
-    stage-packages:
-      - libssl1.0.0
+    plugin: dump
+    source: https://www.factorio.com/get-download/$SNAPCRAFT_PROJECT_VERSION/headless/linux64
+    source-type: tar
+    stage:
+      - -factorio/config-path.cfg
+    organize:
+      '*' : factorio/
 
   config:
     after:

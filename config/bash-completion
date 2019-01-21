@@ -1,7 +1,7 @@
+#!bin/bash
 #
 # Factorio headless bash completions
 #
-
 function _factorio-headless {
 
     local cur prev words cword split
@@ -113,7 +113,7 @@ function _factorio-headless {
             _filedir "png"
             ;;
 
-        # Default options for map previews
+        # Default options
         --map-preview-size)
             COMPREPLY=("1024")
             ;;
@@ -126,8 +126,20 @@ function _factorio-headless {
             COMPREPLY=("0,0")
             ;;
 
+        --port)
+            COMPREPLY=("34197")
+            ;;
+
+        --port)
+            COMPREPLY=("34197")
+            ;;
+
+        --benchmark-ticks)
+            COMPREPLY=("1000")
+            ;;
+
         # Skip completitions that need an argument
-        --map-gen-seed|--noise-outputs|--slope-shading|--report-quantities|--threads|--until-tick|--benchmark-ticks|--port|--bind|--rcon-port|--rcon-password)
+        --map-gen-seed|--noise-outputs|--slope-shading|--report-quantities|--threads|--until-tick|--bind|--rcon-port|--rcon-password)
             ;;
 
         # Show all options 
