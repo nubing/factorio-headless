@@ -32,4 +32,4 @@ fi
 ${COMMAND} &
 
 # Save server pid to file so we can kill it later
-$! > ${SNAP_COMMON}/.pid
+echo $! > ${SNAP_COMMON}/.pid
