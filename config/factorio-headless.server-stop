@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Get server pid and kill it
+pid=$(cat /var/snap/factorio-headless/common/.pid)
+kill $pid
+
+# Wait for server to close
+wait $pid
+
+

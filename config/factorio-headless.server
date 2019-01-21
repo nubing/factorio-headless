@@ -29,5 +29,7 @@ if [ -n "${RCON_PASSWORD}" ]; then
 	COMMAND="${COMMAND} --rcon-password ${RCON_PASSWORD}"
 fi
 
-${COMMAND}
+${COMMAND} &
 
+# Save server pid to file so we can kill it later
+$! > ${SNAP_COMMON}/.pid

@@ -30,8 +30,9 @@ architectures:
 apps:
   server:
     command: factorio/factorio-headless.server
-    daemon: simple
+    daemon: forking
     stop-timeout: 20s
+    stop-command: factorio/factorio-headless.server-stop
     restart-condition: never
     plugs: [network, network-bind]
 
