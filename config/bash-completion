@@ -62,7 +62,7 @@ function _factorio-headless {
     # Go 
     case "$prev" in
         # Files selection
-        --executable-path|--apply-update|--console-log|--server-id)
+        --executable-path|--apply-update|--console-log)
             _filedir
             ;;
 
@@ -99,7 +99,7 @@ function _factorio-headless {
             ;;
 
         # JSON selection
-        --map-gen-settings|--map-settings|--server-settings|--server-whitelist|--server-banlist)
+        --map-gen-settings|--map-settings|--server-settings|--server-whitelist|--server-banlist|--server-id)
             _filedir "json"
             ;;
 
