@@ -1,5 +1,5 @@
 name: factorio-headless
-version: '0.16.51'
+version: '0.17.52'
 summary: Headless server for Factorio running as a system service
 description: |
   Change configuration options
@@ -23,6 +23,7 @@ description: |
 
 grade: stable
 confinement: strict
+base: core18
 
 architectures:
   - build-on: amd64
@@ -37,7 +38,7 @@ apps:
     plugs: [network, network-bind]
 
   factorio-headless:
-    command: factorio/bin/x64/factorio
+    command: factorio/factorio-headless.admin
     completer: factorio/bash-completion
     plugs: [network, network-bind, home]
 
@@ -45,6 +46,7 @@ parts:
   factorio:
     plugin: dump
     source: https://www.factorio.com/get-download/$SNAPCRAFT_PROJECT_VERSION/headless/linux64
+    #source: .local/factorio_headless_x64_0.17.52.tar.xz
     source-type: tar
     stage:
       - -factorio/config-path.cfg
@@ -64,3 +66,11 @@ parts:
     plugin: dump
     organize:
       '*' : common/
+
+  admin:
+    plugin: nil
+    stage-packages:
+      - whiptail
+      - libslang2
+      - curl
+      - jq
