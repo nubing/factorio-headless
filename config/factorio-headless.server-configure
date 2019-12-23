@@ -1,0 +1,161 @@
+#!/bin/bash
+#
+# 
+#
+configure_submenu(){
+
+	TAGS="$(printf %q $(snapctl get tags))"
+	ADMINS="$(printf %q $(snapctl get admins))"
+
+	SELECTED=$(whiptail --backtitle "$(status)" --title "Configure" --menu "" 0 0 0 \
+		--ok-button "Select" --cancel-button "Back" --default-item $1 \
+		name "$(snapctl get name)" \
+		description "$(snapctl get description)" \
+		tags "${TAGS//\\/}" \
+		max-players "$(snapctl get max-players)" \
+		visibility-public "$(snapctl get visibility-public)" \
+		visibility-lan "$(snapctl get visibility-lan)" \
+		username "$(snapctl get username)" \
+		password "$(snapctl get password)" \
+		token "$(snapctl get token)" \
+		game-password "$(snapctl get game-password)" \
+		require-user-verification "$(snapctl get require-user-verification)" \
+		max-upload-in-kilobytes-per-second "$(snapctl get max-upload-in-kilobytes-per-second)" \
+		minimum-latency-in-ticks "$(snapctl get minimum-latency-in-ticks)" \
+		ignore-player-limit-for-returning-players "$(snapctl get ignore-player-limit-for-returning-players)" \
+		allow-commands "$(snapctl get allow-commands)" \
+		autosave-interval "$(snapctl get autosave-interval)" \
+		autosave-slots "$(snapctl get autosave-slots)" \
+		afk-autokick-interval "$(snapctl get afk-autokick-interval)" \
+		auto-pause "$(snapctl get auto-pause)" \
+		only-admins-can-pause-the-game "$(snapctl get only-admins-can-pause-the-game)" \
+		autosave-only-on-server "$(snapctl get autosave-only-on-server)" \
+		non-blocking-saving "$(snapctl get non-blocking-saving)" \
+		admins "${ADMINS//\\/}" \
+		port "$(snapctl get port)" \
+		bind "$(snapctl get bind)" \
+		rcon-port "$(snapctl get rcon-port)" \
+		rcon-password "$(snapctl get rcon-password)" \
+		3>&1 1>&2 2>&3)
+	case $SELECTED in
+		name) configure_text $SELECTED "This will be the name under which the server will be listed in the server browser." ;;
+		description) configure_text $SELECTED "A brief description of your server." ;;
+		tags) configure_text $SELECTED "A list of game tags.\nExample: [kovarex,test2]" ;;
+		max-players) configure_number $SELECTED "Limit the number of players that can be connected to the server at the same time. For no limit set to 0." ;;
+		visibility-public) configure_boolean $SELECTED "Should server appear in the public server list. This requires the login credentials to be filled in." ;;
+		visibility-lan) configure_boolean $SELECTED "Should server appear in the local server list." ;;
+		username) configure_text $SELECTED "Your factorio.com login name. Required for games with visibility public" ;;
+		password) configure_password $SELECTED "Your factorio.com login password. Required for games with visibility public" ;;
+		token) configure_text $SELECTED "Authentication token. Should be used instead of 'password' above." ;;
+		game-password) configure_text $SELECTED "..." ;;
+		require-user-verification) configure_boolean $SELECTED "When set to true, the server will only allow clients that have a valid Factorio.com account" ;;
+		max-upload-in-kilobytes-per-second) configure_number $SELECTED "Optional, default value is 0. 0 means unlimited." ;;
+		minimum-latency-in-ticks) configure_number $SELECTED "One tick is 16ms in default speed, default value is 0. 0 means no minimum." ;;
+		ignore-player-limit-for-returning-players) configure_boolean $SELECTED "Players that played on this map already can join even when the max player limit was reached." ;;
+		allow-commands) configure_commands $SELECTED "possible values are, true, false and admins-only" ;;
+		autosave-interval) configure_number $SELECTED "Autosave interval in minutes" ;;
+		autosave-slots) configure_number $SELECTED "server autosave slots, it is cycled through when the server autosaves." ;;
+		afk-autokick-interval) configure_number $SELECTED "How many minutes until someone is kicked when doing nothing, 0 for never." ;;
+		auto-pause) configure_boolean $SELECTED "Whether should the server be paused when no players are present." ;;
+		only-admins-can-pause-the-game) configure_boolean $SELECTED "..." ;;
+		autosave-only-on-server) configure_boolean $SELECTED "Whether autosaves should be saved only on server or also on all connected clients. Default is true." ;;
+		non-blocking-saving) configure_boolean $SELECTED "Highly experimental feature, enable only at your own risk of losing your saves. On UNIX systems, server will fork itself to create an autosave. Autosaving on connected Windows clients will be disabled regardless of autosave_only_on_server option." ;;
+		admins) configure_text $SELECTED "List of case insensitive usernames, that will be promoted immediately." ;;
+		port) configure_number $SELECTED "Default port is 34197. This settings allows you to start server on different port." ;;
+		bind) configure_text $SELECTED "..." ;;
+		rcon-port) configure_number $SELECTED "..." ;;
+		rcon-password) configure_password $SELECTED "..." ;;
+		*) main_menu ;;
+	esac
+}
+
+configure_text(){
+	TITLE=(${1//\-/\ })
+
+	# need to handle arrays differently
+	if [[ "$1" == "tags" ]] || [[ "$1" == "admins" ]]; then
+		CURRENT=$(printf %q $(snapctl get $1))
+		INPUT=${CURRENT//\\/}
+	else
+		INPUT=$(snapctl get $1)
+	fi
+	
+	TEXT=$(whiptail --title "${TITLE[*]^}" --inputbox "$2" 0 50  \
+		--ok-button "Save" --cancel-button "Back" "$INPUT" \
+		3>&1 1>&2 2>&3)
+
+	if [ $? -eq 0 ]; then
+		if [[ "$1" == "tags" ]] || [[ "$1" == "admins" ]]; then
+
+			# check if array can be parsed, second case is for additional double quotes which jq ignores but doesn't parses
+			# FIXME not all issues are catched for example '"["test"]'
+			if [[ $(jq --exit-status . >/dev/null 2>&1 <<< "$TEXT") -eq 0 ]] && [[ ! -z $(jq -c . <<< "$TEXT") ]]; then
+				snapctl set "$1=$TEXT"
+			else
+				whiptail --backtitle "$(status)" --title "${TITLE[*]^}" --msgbox "This needs to be a proper array for example [\"one\", \"two\"]" 0 0
+				configure_text "$1" "$2"
+			fi
+		else
+			snapctl set "$1=$TEXT"
+		fi
+	fi
+  	configure_submenu $1
+}
+
+configure_number(){
+	TITLE=(${1//\-/\ })
+	NUMBER=$(whiptail --backtitle "$(status)" --title "${TITLE[*]^}" --inputbox "$2" 0 50 \
+		--ok-button "Save" --cancel-button "Back" "$(snapctl get $1)" \
+		3>&1 1>&2 2>&3)
+	if [ $? = 0 ]; then
+		if [[ $NUMBER == +([0-9]) ]]; then
+			snapctl set "$1=$NUMBER"
+		else
+			whiptail --backtitle "$(status)" --title "${TITLE[*]^}" --msgbox "This needs to be a number" 0 0
+			configure_number "$1" "$2"
+		fi
+	fi
+  	configure_submenu $1
+}
+
+configure_boolean(){
+	TITLE=(${1//\-/\ })
+	BOOLEAN=$(whiptail --backtitle "$(status)" --title "${TITLE[*]^}" --menu "$2" 0 0 0 \
+		--noitem --ok-button "Save" --cancel-button "Back" --default-item "$(snapctl get $1)" \
+		true "Yes" \
+		false "No" \
+		3>&1 1>&2 2>&3)
+	if [ $? = 0 ]; then
+		snapctl set "$1=$BOOLEAN"
+	fi
+	configure_submenu $1
+}
+
+configure_password(){
+	TITLE=(${1//\-/\ })
+	PASSWORD=$(whiptail --backtitle "$(status)" --title "${TITLE[*]^}" --passwordbox "$2" 0 50 \
+		--ok-button "Save" --cancel-button "Back" "$(snapctl get $1)" \
+		3>&1 1>&2 2>&3)
+	if [ $? = 0 ]; then
+		TOKEN=$(curl --data "username=${USERNAME}&password=${PASSWORD}" https://auth.factorio.com/api-login | jq -r .[0])
+		snapctl set "token=$TOKEN"
+	fi
+  	configure_submenu $1
+}
+
+configure_commands(){
+	TITLE=(${1//\-/\ })
+	COMMANDS=$(whiptail --backtitle "$(status)" --title "${TITLE[*]^}" --menu "$2" 0 0 0 \
+		--noitem  --ok-button "Save" --cancel-button "Back" --default-item "$(snapctl get $1)" \
+		admins-only "Admins" \
+		true "All" \
+		false "None" \
+		3>&1 1>&2 2>&3)
+	if [ $? = 0 ]; then
+		snapctl set "$1=$COMMANDS"
+	fi
+	configure_submenu $1
+}
+
+
+

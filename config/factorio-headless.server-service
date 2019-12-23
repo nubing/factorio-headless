@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# Service menu
+#
+service_submenu(){
+	
+	SELECTED=$(whiptail --backtitle "$(status)" --title "Service" --menu "" 0 0 0 \
+		--notags --ok-button "Select" --cancel-button "Back" \
+		1 "Start" \
+		2 "Restart" \
+		3 "Stop" \
+		4 "Log" \
+		3>&1 1>&2 2>&3)
+
+	case $SELECTED in
+		1) service_start ;;
+		2) service_restart ;;
+		3) service_stop ;;
+		4) service_log "Log" ;;
+		*) main_menu ;;
+	esac
+}
+
+service_start(){
+	snapctl start factorio-headless.service
+	if [ $? -ne 0 ]; then
+		service_log "Error starting server"
+	fi
+	service_submenu
+}
+
+service_restart(){
+	snapctl restart factorio-headless.service
+	if [ $? -ne 0 ]; then
+		service_log "Error restarting server"
+	fi
+	service_submenu
+}
+
+service_stop(){
+	snapctl stop factorio-headless.service
+	if [ $? -ne 0 ]; then
+		service_log "Error stoping server"
+	fi
+	service_submenu
+}
+
+service_log(){
+	whiptail --backtitle "$(status)" --title "$1" --textbox "$SNAP_COMMON/factorio-current.log" 0 0 0
+	service_submenu
+}

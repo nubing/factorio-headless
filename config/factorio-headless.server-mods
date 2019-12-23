@@ -1,0 +1,158 @@
+#!/bin/bash
+#
+# Script to help with installing mods and controling server
+#
+#
+mods_submenu(){
+	SELECTED=$(whiptail --backtitle "$(status)" --title "Mods" --menu "" 0 0 0 \
+		--notags --ok-button "Select" --cancel-button "Back" \
+		1 "Install" \
+		2 "Select" \
+		3 "Remove" \
+		4 "Update" \
+		3>&1 1>&2 2>&3)
+	case $SELECTED in
+		1) mods_install ;;
+		2) mods_select ;;
+		3) mods_remove ;;
+		4) mods_update ;;
+		*) main_menu ;;
+	esac
+}
+
+mods_install(){
+	SEARCH=$(whiptail --backtitle "$(status)" --title "Install" --inputbox "Search for mods to install." 0 50 \
+		--ok-button "Search" --cancel-button "Back" \
+		3>&1 1>&2 2>&3)
+	if [ $? -eq 0 ]; then
+		mods_install_results "$SEARCH"
+	else
+	    mods_submenu
+	fi
+}
+
+mods_install_results(){
+
+	# create results list
+	oIFS=$IFS
+	IFS=$'\n'
+	i=1
+	for mod in $(jq -r --arg version $VERSION '(.results[] | select(.latest_release.info_json.factorio_version == $version)) .title' $ALL_MODS); do
+		if [[ "${mod,,}" == *${@,,}* ]]; then
+			results[$i]="${mod}"
+			((i++))
+		fi
+	done
+	IFS=$oIFS
+
+	# check if results
+	if [ ${i} -gt 1 ]; then
+
+		# create menu options for selection
+		i=1
+		menu_options=()
+		for option in "${results[@]}"; do
+			menu_options+=( ${i//\"} "${option//\"}" )
+			((i++))
+		done
+
+		# show selected or return to main menu
+		selected=$(whiptail --menu "Search Results" 0 0 0 "${menu_options[@]}" 3>&1 1>&2 2>&3)
+		if [ $? = 0 ]; then
+			mods_install_selected "${results[$selected]}" "$1"
+		else
+			mods_submenu
+		fi
+
+	# no results
+	else
+		whiptail --title "Search Results" --msgbox "There are no results for this query." 0 0
+		mods_install
+	fi
+	
+}
+
+mods_install_selected(){
+
+	# Get information from mods.json file
+	owner=$(jq -r --arg title "${1}" '(.results[] | select(.title == $title)) .owner' $ALL_MODS)
+	downloads=$(jq -r --arg title "${1}" '(.results[] | select(.title == $title)) .downloads_count' $ALL_MODS)
+	version=$(jq -r --arg title "${1}" '(.results[] | select(.title == $title)) .latest_release.version' $ALL_MODS)
+	summary=$(jq -r --arg title "${1}" '(.results[] | select(.title == $title)) .summary' $ALL_MODS)	
+
+	message="Owner: ${owner}\nVersion: ${version}\nDownloads: ${downloads}\n\n${summary}\n\nInstall this mod?"
+
+	if (whiptail --title "${1}" --yesno "${message}" 0 0); then
+
+		# Download mod
+		download_url=$(jq -r --arg title "${1}" '(.results[] | select(.title == $title)) .latest_release.download_url' $ALL_MODS)
+		file_name=$(jq -r --arg title "${1}" '(.results[] | select(.title == $title)) .latest_release.file_name' $ALL_MODS)
+
+		USERNAME=$(snapctl get username)
+		TOKEN=$(snapctl get token)
+		curl -o $SNAP_COMMON/mods/$file_name -L "https://mods.factorio.com/${download_url}?username=${USERNAME}&token=${TOKEN}"
+
+		# Add to mod-list.json
+		name=$(jq -r --arg title "${1}" '(.results[] | select(.title == $title)) .name' $ALL_MODS)
+		mod_list=$(jq --arg name "${name}" '.mods |= . + [{"name":$name,"enabled":true}]' $SNAP_COMMON/mods/mod-list.json)
+		echo $mod_list > $SNAP_COMMON/mods/mod-list.json
+
+		mods_install_results "${2}"
+	else
+    	mods_install_results "${2}"
+	fi
+}
+
+mods_select(){
+
+	# List available mods
+	SELECTED_OPTIONS=()
+	for MOD in $(jq -r '.mods[] | .name' $SNAP_COMMON/mods/mod-list.json); do
+
+		# Base mod is not in mod list
+		if [ "${MOD}" != "base" ]; then
+			TITLE=$(jq -r --arg name "${MOD}" '(.results[] | select(.name == $name)) .title' $ALL_MODS)
+		else
+			TITLE="Factorio"
+		fi
+
+		# get selected options in mod-list.json
+		ENABLED=$(jq -r --arg name "${MOD}" '(.mods[] | select(.name == $name)) .enabled' $SNAP_COMMON/mods/mod-list.json)
+		if [ "${ENABLED}" == "true" ]; then
+			SELECTED_OPTIONS+=( "${MOD}" "${TITLE}" ON)
+		else
+			SELECTED_OPTIONS+=( "${MOD}" "${TITLE}" OFF)
+		fi
+	done
+
+	# Save selected mods
+	SELECTED=$(whiptail --backtitle "$(status)" --title "Select" --checklist "Select mods to activate" 0 0 0 "${SELECTED_OPTIONS[@]}" 3>&1 1>&2 2>&3)
+	if [ $? = 0 ]; then
+
+		# make all disabled then go trough selected and enable those
+		MOD_LIST=$(cat $SNAP_COMMON/mods/mod-list.json | jq '.mods[] .enabled = false')
+
+		SELECTED="${SELECTED//\"}"
+		for MOD in ${SELECTED[@]}; do
+			MOD_LIST=$(echo ${MOD_LIST} | jq --arg name "${MOD}" '(.mods[] | select(.name == $name)) .enabled = true')
+		done
+
+		# save to file and return to main menu
+		echo $MOD_LIST > $SNAP_COMMON/mods/mod-list.json
+		main_menu
+	else
+		mods_submenu
+	fi
+}
+
+mods_remove(){
+	whiptail --title "$NAME" --msgbox "TODO" 0 0 0 3>&1 1>&2 2>&3
+	mods_submenu
+}
+
+mods_update(){
+	curl --silent "https://mods.factorio.com/api/mods?page_size=max" > $ALL_MODS
+	# TODO
+	#whiptail --title "$NAME" --msgbox "Mods updated!" 0 0 0 3>&1 1>&2 2>&3
+	mods_submenu
+}

@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# Script to help with installing mods and controling server
+#
+#
+#
+#
+help_submenu(){
+	SELECTED=$(whiptail --backtitle "$(status)" --title "Help" --menu "" 0 0 0 \
+		--notags --ok-button "Select" --cancel-button "Back" \
+		1 "Commands" \
+		2 "Files" \
+		3>&1 1>&2 2>&3)
+	case $SELECTED in
+		1) help_commands ;;
+		2) help_files ;;
+		*) main_menu ;;
+	esac
+}
+
+help_commands(){
+	whiptail --title "$NAME" --msgbox "TODO" 0 0 0 3>&1 1>&2 2>&3
+	help_submenu
+}
+
+help_files(){
+	whiptail --title "$NAME" --msgbox "TODO" 0 0 0 3>&1 1>&2 2>&3
+	help_submenu
+}
+
+
+
+
+
+

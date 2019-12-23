@@ -1,35 +1,98 @@
 #!/bin/bash
 #
-# Wrapper script for additional options set via snap settings
-# https://wiki.factorio.com/Console#Command_line_parameters
+# Script to help with controling server and installing mods
 #
+source $SNAP/factorio/factorio-headless.server-service
+source $SNAP/factorio/factorio-headless.server-configure
+source $SNAP/factorio/factorio-headless.server-mods
+source $SNAP/factorio/factorio-headless.server-help
 
-# Remove temporary zip which blocks loading last save
-rm --force ${SNAP_COMMON}/saves/*.tmp.zip
+VERSION="0.17"
+ALL_MODS=$SNAP_COMMON/temp/all-mods.json
 
-COMMAND="${SNAP}/factorio/bin/x64/factorio --start-server-load-latest"
+# https://askubuntu.com/a/781062
+export NEWT_COLORS='
+	root=,black
+	border=black,black
+	window=green,black
+	
+	title=brightgreen,black
+	roottext=brightgreen,black
 
-PORT=$(snapctl get port)
-if [ -n "${PORT}" ]; then
-	COMMAND="${COMMAND} --port ${PORT}"
+	textbox=green,black
+	entry=white,black
+
+	compactbutton=green,black
+	button=white,green
+
+	listbox=green,black
+	actsellistbox=white,green
+	actlistbox=black,brightgreen
+'
+
+status(){
+	STATUS=($(snapctl services factorio-headless))
+	echo " Factorio Headless Server - ${STATUS[5]^} - ${STATUS[6]^}"
+}
+
+get_token(){
+	if [ -z "$USERNAME" ]; then
+		USERNAME=$(whiptail --inputbox "\n   Username?" 0 50 --title "$NAME" \
+			--ok-button "Submit" --cancel-button "Back" \
+			3>&1 1>&2 2>&3)	
+	fi
+
+	PASSWORD=$(snapctl get password)
+	if [ -z "$PASSWORD" ]; then
+		PASSWORD=$(whiptail --inputbox "\n   Password?" 0 50 --title "$NAME" \
+			--ok-button "Submit" --cancel-button "Back" \
+			3>&1 1>&2 2>&3)
+	fi
+
+	TOKEN=$(curl --data "username=${USERNAME}&password=${PASSWORD}" https://auth.factorio.com/api-login | jq -r .[0])
+	snapctl set username="$USERNAME"
+	snapctl set token="$TOKEN"
+}
+
+main_menu(){
+	SELECTED=$(whiptail --backtitle "$(status)" --menu "" 0 0 0 \
+		--notags --ok-button "Select" --cancel-button "Exit" \
+		1 "Service" \
+		2 "Configure" \
+		3 "Mods" \
+		4 "Help" \
+		3>&1 1>&2 2>&3)
+	case $SELECTED in
+		1) service_submenu ;;
+		2) configure_submenu name ;;
+		3) mods_submenu ;;
+		4) help_submenu ;;
+		*) exit 0 ;;
+	esac
+}
+
+if [ ${#} -gt 0 ]; then
+	${SNAP}/factorio/bin/x64/factorio $@
+	exit $?
+else
+	if [ "$EUID" -ne 0 ]; then
+		echo "Run as root! Server files are located in protected directory."
+		echo "sudo factorio-headless"
+		exit 1
+	fi
+
+	if [ ! -e $ALL_MODS ]; then
+		mods_update
+	fi
+
+	main_menu
 fi
 
-BIND=$(snapctl get bind)
-if [ -n "${BIND}" ]; then
-	COMMAND="${COMMAND} --bind ${BIND}"
-fi
 
-RCON_PORT=$(snapctl get rcon-port)
-if [ -n "${RCON_PORT}" ]; then
-	COMMAND="${COMMAND} --rcon-port ${RCON_PORT}"
-fi
 
-RCON_PASSWORD=$(snapctl get rcon-password)
-if [ -n "${RCON_PASSWORD}" ]; then
-	COMMAND="${COMMAND} --rcon-password ${RCON_PASSWORD}"
-fi
 
-${COMMAND} &
 
-# Save server pid to file so we can kill it later
-echo $! > ${SNAP_COMMON}/.pid
+
+
+
+

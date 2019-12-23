@@ -29,24 +29,24 @@ architectures:
   - build-on: amd64
 
 apps:
-  server:
-    command: factorio/factorio-headless.server
+  service:
+    command: factorio/factorio-headless.start
     daemon: forking
     stop-timeout: 20s
-    stop-command: factorio/factorio-headless.server-stop
-    restart-condition: never
+    stop-command: factorio/factorio-headless.stop
+    restart-condition: on-success
     plugs: [network, network-bind]
 
   factorio-headless:
-    command: factorio/factorio-headless.admin
+    command: factorio/factorio-headless.server
     completer: factorio/bash-completion
-    plugs: [network, network-bind, home]
+    plugs: [network, network-bind]
 
 parts:
   factorio:
     plugin: dump
     source: https://www.factorio.com/get-download/$SNAPCRAFT_PROJECT_VERSION/headless/linux64
-    #source: .local/factorio_headless_x64_0.17.52.tar.xz
+    #source: .local/factorio_headless_x64_$SNAPCRAFT_PROJECT_VERSION.tar.xz
     source-type: tar
     stage:
       - -factorio/config-path.cfg
@@ -67,7 +67,7 @@ parts:
     organize:
       '*' : common/
 
-  admin:
+  server:
     plugin: nil
     stage-packages:
       - whiptail
