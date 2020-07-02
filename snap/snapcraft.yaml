@@ -1,5 +1,5 @@
 name: factorio-headless
-version: '0.18.33'
+version: '0.18.34'
 summary: Headless server for Factorio running as a system service
 description: |
   Change configuration options
